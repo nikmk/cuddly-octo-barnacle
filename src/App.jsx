@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const initialWaitlistCount = 1284;
+const initialWaitlistCount = 0;
 const storageKey = 'harbour-waitlist-email';
 const exampleBrands = [
   'The Whole Truth',
