@@ -311,9 +311,18 @@ export default function App() {
                 You describe what you need in plain language. Harbour connects your AI agent to every Indian health brand. One conversation. Every brand. Exactly what fits.
               </p>
 
+              {/* Exchange Layer Diagram */}
+              <div className="exl-diagram reveal" style={{ '--delay': '260ms' }}>
+                <img
+                  src="/exchange-diagram.svg"
+                  alt="Harbour Exchange Layer diagram"
+                  className="exl-diagram-img"
+                />
+              </div>
+
               <div
                 className="brand-row reveal"
-                style={{ '--delay': '260ms' }}
+                style={{ '--delay': '320ms' }}
                 aria-label="Example brands indexed"
               >
                 {exampleBrands.map((brand) => (
@@ -323,7 +332,7 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="stats-grid reveal" style={{ '--delay': '320ms' }} aria-label="Trust metrics">
+              <div className="stats-grid reveal" style={{ '--delay': '380ms' }} aria-label="Trust metrics">
                 {trustStats.map((stat) => (
                   <article className="stat-card" key={stat.label}>
                     <div className="meta">{stat.label}</div>

@@ -538,6 +538,23 @@ p {
   color: var(--text);
 }
 
+/* ── Exchange Layer (inline hero diagram) ── */
+
+/* Exchange Layer Diagram (SVG image) */
+.exl-diagram {
+  margin-top: var(--space-5);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.exl-diagram-img {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  display: block;
+}
+
+
 .footer {
   margin-top: var(--space-8);
   padding-top: 1.4rem;
@@ -631,6 +648,13 @@ p {
 
   .section {
     margin-top: var(--space-7);
+  }
+
+}
+
+@media (max-width: 640px) {
+  .exl-diagram-img {
+    max-width: 100%;
   }
 }
 
