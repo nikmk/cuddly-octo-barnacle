@@ -142,9 +142,9 @@ export default function App() {
 
   const trustStats = [
     {
-      label: 'Early waitlist',
-      value: formatCount(waitlistCount),
-      copy: 'People who read the label before they buy.',
+      label: 'RESULT SOURCE',
+      value: 'Direct. ',
+      copy: 'Every answer comes from the brand.',
     },
     {
       label: 'Brands indexed',
@@ -152,9 +152,9 @@ export default function App() {
       copy: 'Health brands ready to be found.',
     },
     {
-      label: 'Results Ranked By Fit',
-      value: '100%',
-      copy: 'Not Ad spend.',
+      label: 'PLACEMENT MODEL',
+      value: 'Zero paid.',
+      copy: 'Fit decides the order. Nothing else.',
     },
   ];
 
@@ -253,7 +253,7 @@ export default function App() {
               </p>
 
               {/* Exchange Layer Diagram */}
-              <div className="exl-diagram reveal" style={{ '--delay': '260ms' }}>
+              <div className="exl-diagram reveal" style={{ '--delay': '160ms' }}>
                 <img
                   src="/exchange-diagram.svg"
                   alt="Harbour Exchange Layer diagram"
@@ -294,10 +294,10 @@ export default function App() {
                     </h2>
                     <p className="card-subtitle">Beta Launch. Limited spots.</p>
                   </div>
-                  <div className="pill">
+                  {/* <div className="pill">
                     <span>Waitlist</span>
                     <strong>{formatCount(waitlistCount)}</strong>
-                  </div>
+                  </div> */}
                 </div>
 
                 {!isSubmitted ? (
@@ -428,7 +428,8 @@ export default function App() {
               <div>
                 <div className="eyebrow">Why Harbour exists</div>
                 <h2 className="section-title">
-                  Health aisle is growing. <em>Trust is not.</em>
+                More brands. More noise. 
+                <em>More Doubt.</em>
                 </h2>
               </div>
               <p className="section-copy">
