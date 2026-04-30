@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db } from './firebase';
+
+const waitlistCollection = import.meta.env.VITE_FIREBASE_COLLECTION || 'waitlist';
 
 const initialWaitlistCount = 0;
 const storageKey = 'harbour-waitlist-email';
 const exampleBrands = [
-  'The Whole Truth',
-  'MuscleBlaze',
-  'Only Whats Needed',
-  'Wellbeing Nutrition',
-  'Cosmix',
-  'Plix',
+  'Optimum Nutrition(ON)',
+  'ISOPURE',
+  'MyProtein',
+  'Dymatize',
+  'GNC',
+  'MuscleTech'
 ];
 
 const whyHarbour = [
   {
     label: 'Coverage',
     value: '100+',
-    title: 'Indian D2C health brands, in one search layer.',
+    title: 'D2C health brands, in one search layer.',
     copy:
       'Protein, creatine, electrolytes, greens, sleep, gut health, and more. No hopping between fifteen tabs to compare basics.',
   },
@@ -24,7 +28,7 @@ const whyHarbour = [
     value: 'Pure Purchase Intent',
     title: 'Product fit decides placement.',
     copy:
-      'Harbour is built to rank by fit. Your goal comes first. Product placement does not.',
+      'Harbour is built to rank by fit. Your goal comes first. Product matches to your requirement.',
   },
   {
     label: 'Speed',
@@ -43,7 +47,7 @@ const steps = [
       'Write it the way you would text someone who actually knows the category.',
     label: 'Example query',
     example:
-      '“Need a clean whey isolate under ₹3,000 with low lactose and fast delivery to Bangalore.”',
+      '“I need a clean whey isolate under three thousand, low lactose, fast delivery.”',
   },
   {
     step: 'Step 02',
@@ -77,71 +81,16 @@ function validateName(name) {
   return name.trim().length >= 2;
 }
 
-async function fetchWaitlistCount() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) return null;
-
-  const response = await fetch(
-    `${supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/get_waitlist_count`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-      },
-      body: JSON.stringify({}),
-    }
-  );
-
-  if (!response.ok) return null;
-  return response.json();
-}
-
-async function submitToSupabase(payload) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const supabaseTable = import.meta.env.VITE_SUPABASE_TABLE || 'waitlist';
-  const supabaseSubmitUrl = import.meta.env.VITE_SUPABASE_SUBMIT_URL;
-
-  if (!supabaseAnonKey || (!supabaseSubmitUrl && !supabaseUrl)) {
-    throw new Error('Missing Supabase configuration');
-  }
-
-  const endpoint =
-    supabaseSubmitUrl ||
-    `${supabaseUrl.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(supabaseTable)}`;
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${supabaseAnonKey}`,
-      Prefer: 'return=minimal',
-    },
-    body: JSON.stringify([payload]),
+async function submitToFirestore(payload) {
+  await addDoc(collection(db, waitlistCollection), {
+    name: payload.name,
+    email: payload.email.toLowerCase(),
+    phone: payload.phone,
+    city: payload.city,
+    pain: payload.pain,
+    source: payload.source,
+    created_at: serverTimestamp(),
   });
-
-  if (!response.ok) {
-    let details = null;
-
-    try {
-      details = await response.json();
-    } catch {
-      try {
-        details = await response.text();
-      } catch {
-        details = null;
-      }
-    }
-
-    const error = new Error('Supabase request failed');
-    error.status = response.status;
-    error.details = details;
-    throw error;
-  }
 }
 
 async function shareLandingPage(setStatus) {
@@ -183,9 +132,12 @@ export default function App() {
   const [waitlistCount, setWaitlistCount] = useState(initialWaitlistCount);
 
   useEffect(() => {
-    fetchWaitlistCount().then((count) => {
-      if (count !== null) setWaitlistCount(count);
-    });
+    const unsubscribe = onSnapshot(
+      collection(db, waitlistCollection),
+      (snapshot) => setWaitlistCount(snapshot.size),
+      () => {}
+    );
+    return unsubscribe;
   }, []);
 
   const trustStats = [
@@ -197,12 +149,12 @@ export default function App() {
     {
       label: 'Brands indexed',
       value: '100+',
-      copy: 'Health brands in India ready to be found.',
+      copy: 'Health brands ready to be found.',
     },
     {
       label: 'Results Ranked By Fit',
       value: '100%',
-      copy: 'Not spend. Just match quality.',
+      copy: 'Not Ad spend.',
     },
   ];
 
@@ -243,7 +195,6 @@ export default function App() {
     if (existing && existing === payload.email.toLowerCase()) {
       setIsSubmitted(true);
       setStatus({ message: 'You are on the list.', state: 'success' });
-      setWaitlistCount(initialWaitlistCount + 1);
       return;
     }
 
@@ -251,22 +202,12 @@ export default function App() {
     setStatus({ message: 'Saving your spot...', state: '' });
 
     try {
-      await submitToSupabase(payload);
+      await submitToFirestore(payload);
       window.localStorage.setItem(storageKey, payload.email.toLowerCase());
       setIsSubmitted(true);
-      setWaitlistCount((count) => count + 1);
       setStatus({ message: 'You are on the list.', state: 'success' });
     } catch (error) {
-      if (error.status === 404) {
-        setStatus({
-          message:
-            'Server could not find the waitlist table. Run the SQL setup in your Server dashboard and confirm the table name is public.waitlist.',
-          state: 'error',
-        });
-      } else if (
-        error.status === 409 ||
-        (error.details && typeof error.details === 'object' && error.details.code === '23505')
-      ) {
+      if (error.status === 409) {
         window.localStorage.setItem(storageKey, payload.email.toLowerCase());
         setIsSubmitted(true);
         setStatus({ message: 'You are already on the list.', state: 'success' });
@@ -289,7 +230,7 @@ export default function App() {
             <a href="#top" className="brand-mark" aria-label="Harbour home">
               Harbour
             </a>
-            <div className="microcopy">Better Discovery · India</div>
+            <div className="microcopy">Better Discovery</div>
           </div>
           <a className="nav-cta microcopy" href="#waitlist">
             Join waitlist
@@ -302,13 +243,13 @@ export default function App() {
           <div className="container hero-grid">
             <div className="hero-copy">
               <div className="eyebrow reveal" style={{ '--delay': '60ms' }}>
-                100+ brands indexed. Zero paid placements.
+               ZERO PAID PLACEMENTS · 100+ BRANDS
               </div>
               <h1 className="hero-title reveal" style={{ '--delay': '120ms' }}>
                 Something just searched <em>100 health brands</em> for you.
               </h1>
               <p className="hero-subtitle reveal" style={{ '--delay': '200ms' }}>
-                You describe what you need in plain language. Harbour connects your AI agent to every Indian health brand. One conversation. Every brand. Exactly what fits.
+                You describe what you need in plain language. Harbour connects your AI agent (Chatgpt/Claude/Gemini) to every health brand. One conversation. Every brand. Exactly what fits.
               </p>
 
               {/* Exchange Layer Diagram */}
@@ -351,7 +292,7 @@ export default function App() {
                     <h2 className="card-title" id="waitlist-title">
                       Get in before everyone else.
                     </h2>
-                    <p className="card-subtitle">Mumbai &amp; Bangalore first. Limited spots.</p>
+                    <p className="card-subtitle">Beta Launch. Limited spots.</p>
                   </div>
                   <div className="pill">
                     <span>Waitlist</span>
@@ -487,11 +428,11 @@ export default function App() {
               <div>
                 <div className="eyebrow">Why Harbour exists</div>
                 <h2 className="section-title">
-                  India&apos;s health aisle is growing. <em>Trust is not.</em>
+                  Health aisle is growing. <em>Trust is not.</em>
                 </h2>
               </div>
               <p className="section-copy">
-              Too many tabs. Too many claims. Too much noise. Harbour helps people buy protein and health products in India with less bias, less friction, and more clarity.
+              Too many Products. Too many claims. Too much noise. Harbour helps people buy protein and health products with less bias, less friction, and more clarity.
               </p>
             </div>
 
@@ -518,7 +459,7 @@ export default function App() {
                 </h2>
               </div>
               <p className="section-copy">
-                Built for real buying decisions, not keyword stuffing. Harbour understands
+                Built for buying decisions, not pfaffing. Harbour understands
                 what you mean, checks what matters, and returns a tighter shortlist.
               </p>
             </div>
@@ -545,7 +486,7 @@ export default function App() {
           <div>
             <strong>Harbour</strong> <span>Better discovery for everyone.</span>
           </div>
-          <div className="microcopy">Launching in Mumbai &amp; Bangalore first</div>
+          <div className="microcopy">Beta Launch. Limited spots.</div>
         </footer>
       </main>
     </div>
