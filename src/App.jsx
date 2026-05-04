@@ -3,39 +3,36 @@ import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firest
 import { db } from './firebase';
 
 const waitlistCollection = import.meta.env.VITE_FIREBASE_COLLECTION || 'waitlist';
-
-const initialWaitlistCount = 0;
 const storageKey = 'harbour-waitlist-email';
-const exampleBrands = [
-  'Optimum Nutrition(ON)',
-  'ISOPURE',
-  'MyProtein',
-  'Dymatize',
-  'GNC',
-  'MuscleTech'
+
+const marqueebrands = [
+  { name: 'The Whole Truth',    logo: '/logos/twt.svg' },
+  { name: 'Wellbeing Nutrition',logo: '/logos/wellbeing.svg' },
+  { name: 'Setu',               logo: '/logos/setu.svg' },
+  { name: 'Yoga Bar',           logo: '/logos/yogabar.svg' },
+  { name: 'Fast&Up',            logo: '/logos/fastup.svg' },
+  { name: 'Oziva',              logo: '/logos/oziva.svg' },
+  { name: 'Muscleblaze',        logo: '/logos/muscleblaze.svg' },
 ];
 
 const whyHarbour = [
   {
     label: 'Coverage',
     value: '100+',
-    title: 'D2C health brands, in one search layer.',
-    copy:
-      'Protein, creatine, electrolytes, greens, sleep, gut health, and more. No hopping between fifteen tabs to compare basics.',
+    title: 'D2C health brands, one search.',
+    copy: 'Protein, creatine, electrolytes, greens, sleep, gut health — all in one place.',
   },
   {
     label: 'Integrity',
     value: 'Pure Purchase Intent',
     title: 'Product fit decides placement.',
-    copy:
-      'Harbour is built to rank by fit. Your goal comes first. Product matches to your requirement.',
+    copy: 'What fits you, ranks first. No sponsored slots. No brand deals. Your goal decides what you see.',
   },
   {
     label: 'Speed',
     value: 'Seconds',
-    title: 'Search everything without reading everything.',
-    copy:
-      'Describe the outcome you want. Harbour handles filters, ingredients, macros, price checks, and delivery constraints behind the scenes.',
+    title: 'Ask. Get answers.',
+    copy: 'Tell Harbour what you want. It handles the ingredients, macros, and prices — you just pick.',
   },
 ];
 
@@ -43,52 +40,43 @@ const steps = [
   {
     step: 'Step 01',
     title: 'Describe the need',
-    copy:
-      'Write it the way you would text someone who actually knows the category.',
+    copy: 'Just say what you want.',
     label: 'Example query',
-    example:
-      '“I need a clean whey isolate under three thousand, low lactose, fast delivery.”',
+    example: '"Clean whey isolate, under three thousand, low lactose."',
   },
   {
     step: 'Step 02',
-    title: 'Harbour evaluates real fit',
-    copy:
-      'Ingredients, protein per serving, sweeteners, pricing, stock, and shipping get weighed together, not in isolation.',
+    title: 'Harbour finds the fit',
+    copy: 'Ingredients, price, macros — checked together, not one by one.',
     label: 'What gets compared',
-    example:
-      'Protein %, additives, flavor options, final price, shipping ETA, and whether the claims hold up.',
+    example: 'Protein %, additives, flavours, final price, everything you ask for',
   },
   {
     step: 'Step 03',
     title: 'See the best matches',
-    copy:
-      'You see what matches your goal, why it matches, and what trade-offs to expect before you spend.',
+    copy: 'What fits, why it fits, and what the trade-offs are — before you buy.',
     label: 'Example output',
-    example:
-      '3 products that fit. One best on purity. One best on value. One fastest to your pincode. No paid placement.',
+    example: '3 options. Best on purity. Best on value. No paid results.',
   },
 ];
 
-function formatCount(value) {
-  return Number(value).toLocaleString('en-IN');
-}
+const trustStats = [
+  { label: 'Result Source',    value: 'Direct',    desc: 'Every answer comes straight from the brand — no aggregators, no middlemen.' },
+  { label: 'Brands',           value: '100+',       desc: 'Health brands live on Harbour' },
+  { label: 'Placement Model',  value: 'Zero Ads',   desc: 'Ranked only by what fits your search' },
+];
 
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validateName(name) {
-  return name.trim().length >= 2;
-}
+function validateEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function validateName(n)  { return n.trim().length >= 2; }
 
 async function submitToFirestore(payload) {
   await addDoc(collection(db, waitlistCollection), {
-    name: payload.name,
-    email: payload.email.toLowerCase(),
-    phone: payload.phone,
-    city: payload.city,
-    pain: payload.pain,
-    source: payload.source,
+    name:       payload.name,
+    email:      payload.email.toLowerCase(),
+    phone:      payload.phone,
+    city:       payload.city,
+    pain:       payload.pain,
+    source:     payload.source,
     created_at: serverTimestamp(),
   });
 }
@@ -99,72 +87,42 @@ async function shareLandingPage(setStatus) {
     text: 'Found a cleaner way to discover health and protein products in India.',
     url: window.location.href,
   };
-
   try {
     if (navigator.share) {
       await navigator.share(shareData);
       setStatus({ message: 'Shared.', state: 'success' });
       return;
     }
-
     await navigator.clipboard.writeText(shareData.url);
     setStatus({ message: 'Link copied to clipboard.', state: 'success' });
   } catch {
-    setStatus({
-      message: 'Could not share right now. You can still copy the URL manually.',
-      state: 'error',
-    });
+    setStatus({ message: 'Could not share right now.', state: 'error' });
   }
 }
 
 export default function App() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    city: '',
-    pain: '',
-    company: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', city: '', pain: '', company: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [status, setStatus] = useState({ message: '', state: '' });
-  const [waitlistCount, setWaitlistCount] = useState(initialWaitlistCount);
+  const [isSubmitted,  setIsSubmitted]  = useState(false);
+  const [status,       setStatus]       = useState({ message: '', state: '' });
+  const [waitlistCount, setWaitlistCount] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    const unsub = onSnapshot(
       collection(db, waitlistCollection),
-      (snapshot) => setWaitlistCount(snapshot.size),
+      (snap) => setWaitlistCount(snap.size),
       () => {}
     );
-    return unsubscribe;
+    return unsub;
   }, []);
 
-  const trustStats = [
-    {
-      label: 'RESULT SOURCE',
-      value: 'Direct. ',
-      copy: 'Every answer comes from the brand.',
-    },
-    {
-      label: 'Brands indexed',
-      value: '100+',
-      copy: 'Health brands ready to be found.',
-    },
-    {
-      label: 'PLACEMENT MODEL',
-      value: 'Zero paid.',
-      copy: 'Fit decides the order. Nothing else.',
-    },
-  ];
-
-  function updateField(event) {
-    const { name, value } = event.target;
-    setFormData((current) => ({ ...current, [name]: value }));
+  function updateField(e) {
+    const { name, value } = e.target;
+    setFormData(cur => ({ ...cur, [name]: value }));
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault();
 
     if (formData.company) {
       setStatus({ message: 'Submission blocked.', state: 'error' });
@@ -172,11 +130,11 @@ export default function App() {
     }
 
     const payload = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      city: formData.city.trim(),
-      pain: formData.pain.trim(),
+      name:   formData.name.trim(),
+      email:  formData.email.trim(),
+      phone:  formData.phone.trim(),
+      city:   formData.city.trim(),
+      pain:   formData.pain.trim(),
       source: 'landing-page',
       created_at: new Date().toISOString(),
     };
@@ -185,7 +143,6 @@ export default function App() {
       setStatus({ message: 'Please enter your full name.', state: 'error' });
       return;
     }
-
     if (!validateEmail(payload.email)) {
       setStatus({ message: 'Please enter a valid email address.', state: 'error' });
       return;
@@ -206,16 +163,13 @@ export default function App() {
       window.localStorage.setItem(storageKey, payload.email.toLowerCase());
       setIsSubmitted(true);
       setStatus({ message: 'You are on the list.', state: 'success' });
-    } catch (error) {
-      if (error.status === 409) {
+    } catch (err) {
+      if (err.status === 409) {
         window.localStorage.setItem(storageKey, payload.email.toLowerCase());
         setIsSubmitted(true);
         setStatus({ message: 'You are already on the list.', state: 'success' });
       } else {
-        setStatus({
-          message: 'Something failed on our side. Please try again in a moment.',
-          state: 'error',
-        });
+        setStatus({ message: 'Something failed on our side. Please try again.', state: 'error' });
       }
     } finally {
       setIsSubmitting(false);
@@ -223,188 +177,246 @@ export default function App() {
   }
 
   return (
-    <div className="page-shell">
-      <header className="topbar">
-        <div className="container topbar-inner">
-          <div className="brand-lockup">
-            <a href="#top" className="brand-mark" aria-label="Harbour home">
-              Harbour
-            </a>
-            <div className="microcopy">Better Discovery</div>
+    <>
+      {/* ── Nav ── */}
+      <nav className="nav">
+        <div className="wrap nav-inner">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <a href="#top" className="nav-logo" aria-label="Harbour home">Harbour</a>
+            <span className="nav-tag">Better Discovery</span>
           </div>
-          <a className="nav-cta microcopy" href="#waitlist">
-            Join waitlist
-          </a>
+          <a className="nav-cta" href="#waitlist">Join waitlist</a>
         </div>
-      </header>
+      </nav>
 
       <main id="top">
+
+        {/* ── Hero ── */}
         <section className="hero">
-          <div className="container hero-grid">
-            <div className="hero-copy">
-              <div className="eyebrow reveal" style={{ '--delay': '60ms' }}>
-               ZERO PAID PLACEMENTS · 100+ BRANDS
-              </div>
-              <h1 className="hero-title reveal" style={{ '--delay': '120ms' }}>
-                Something just searched <em>100 health brands</em> for you.
-              </h1>
-              <p className="hero-subtitle reveal" style={{ '--delay': '200ms' }}>
-                You describe what you need in plain language. Harbour connects your AI agent (Chatgpt/Claude/Gemini) to every health brand. One conversation. Every brand. Exactly what fits.
-              </p>
-
-              {/* Exchange Layer Diagram */}
-              <div className="exl-diagram reveal" style={{ '--delay': '160ms' }}>
-                <img
-                  src="/exchange-diagram.svg"
-                  alt="Harbour Exchange Layer diagram"
-                  className="exl-diagram-img"
-                />
-              </div>
-
-              <div
-                className="brand-row reveal"
-                style={{ '--delay': '320ms' }}
-                aria-label="Example brands indexed"
-              >
-                {exampleBrands.map((brand) => (
-                  <span className="chip" key={brand}>
-                    {brand}
-                  </span>
-                ))}
-              </div>
-
-              <div className="stats-grid reveal" style={{ '--delay': '380ms' }} aria-label="Trust metrics">
-                {trustStats.map((stat) => (
-                  <article className="stat-card" key={stat.label}>
-                    <div className="meta">{stat.label}</div>
-                    <div className="stat-value">{stat.value}</div>
-                    <p className="stat-copy">{stat.copy}</p>
-                  </article>
-                ))}
-              </div>
+          <div className="wrap">
+            <div className="hero-eyebrow reveal" style={{ '--d': '0ms' }}>
+              Zero paid placements · 100+ brands
+            </div>
+            <h1 className="hero-title reveal" style={{ '--d': '80ms' }}>
+              Something just searched <em>100 health brands</em> for you.
+            </h1>
+            <p className="hero-sub reveal" style={{ '--d': '160ms' }}>
+              Your AI finds the product. Their AI knows the brand. Harbour connects the two.
+            </p>
+            <div className="hero-actions reveal" style={{ '--d': '220ms' }}>
+              {/* <a className="btn-primary" href="#waitlist">Get early access</a> */}
+              <span className="hero-note">Beta Launch · Limited spots</span>
             </div>
 
-            <aside className="sticky-wrap reveal" style={{ '--delay': '180ms' }}>
-              <section className="waitlist-card" id="waitlist" aria-labelledby="waitlist-title">
-                <div className="card-head">
-                  <div>
-                    <div className="eyebrow">Early access</div>
-                    <h2 className="card-title" id="waitlist-title">
-                      Get in before everyone else.
-                    </h2>
-                    <p className="card-subtitle">Beta Launch. Limited spots.</p>
-                  </div>
-                  {/* <div className="pill">
-                    <span>Waitlist</span>
-                    <strong>{formatCount(waitlistCount)}</strong>
-                  </div> */}
+            {/* Diagram */}
+            <div className="diagram-wrap reveal" style={{ '--d': '300ms' }}>
+              <img
+                src="/exchange-diagram.svg"
+                alt="Harbour Exchange Layer — your AI connects to 100+ health brands"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Marquee ── */}
+        <div className="marquee-section reveal" style={{ '--d': '100ms' }}>
+          <p className="marquee-label">Brands on Harbour</p>
+          <div className="marquee-track-wrap">
+            <div className="marquee-track">
+              {[...marqueebrands, ...marqueebrands].map((b, i) => (
+                <div className="m-pill" key={i}>
+                  <img
+                    src={b.logo}
+                    alt={b.name}
+                    onError={e => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <span className="m-pill-fallback">{b.name}</span>
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
+        {/* ── Stats ── */}
+        <div className="wrap">
+          <div className="stats-bar reveal" style={{ '--d': '80ms' }}>
+            {trustStats.map(s => (
+              <div className="stat" key={s.label}>
+                <div className="stat-label">{s.label}</div>
+                <div className="stat-val">{s.value}</div>
+                <div className="stat-desc">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Why Harbour ── */}
+        <section className="section">
+          <div className="wrap">
+            <div className="section-head reveal">
+              <div>
+                <div className="section-label">Why Harbour exists</div>
+                <h2 className="section-title">
+                  You've read more labels than a pharmacist.{' '}
+                  <em>Let that sink in</em>
+                </h2>
+              </div>
+              <p className="section-sub">
+                More options was supposed to make this easier.
+              </p>
+            </div>
+
+            <div className="cards-grid reveal" style={{ '--d': '80ms' }}>
+              {whyHarbour.map(item => (
+                <article className="card" key={item.title}>
+                  <div className="card-tag">{item.label}</div>
+                  <div className="card-num">{item.value}</div>
+                  <h3 className="card-title">{item.title}</h3>
+                  <p className="card-copy">{item.copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── How it works ── */}
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div className="wrap">
+            <div className="section-head reveal">
+              <div>
+                <div className="section-label">How it works</div>
+                <h2 className="section-title">
+                  Simple input. <em>Sharper output.</em>
+                </h2>
+              </div>
+              <p className="section-sub">
+                Built for buying decisions, not pfaffing. Harbour understands what you mean, checks
+                what matters, and returns a tighter shortlist.
+              </p>
+            </div>
+
+            <div className="steps-grid reveal" style={{ '--d': '80ms' }}>
+              {steps.map(s => (
+                <article className="step" key={s.step}>
+                  <div className="step-num">{s.step}</div>
+                  <h3 className="step-title">{s.title}</h3>
+                  <p className="step-copy">{s.copy}</p>
+                  <div className="step-example">
+                    <div className="step-eg-label">{s.label}</div>
+                    <div className="step-eg-text">{s.example}</div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Waitlist ── */}
+        <section className="waitlist-section" id="waitlist">
+          <div className="wrap">
+            <div className="waitlist-inner">
+
+              <div className="waitlist-lhs">
+                <div className="waitlist-eyebrow">Early access</div>
+                <h2 className="waitlist-heading">
+                  Get in before <em>everyone else.</em>
+                </h2>
+                <p className="waitlist-desc">
+                  Beta Launch. Limited spots. Mumbai &amp; Bangalore first.
+                </p>
+                
+              </div>
+
+              <div className="form-card">
                 {!isSubmitted ? (
-                  <form className="waitlist-form" onSubmit={handleSubmit} noValidate>
-                    <div className="field">
-                      <label htmlFor="name">Full name</label>
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        autoComplete="name"
-                        placeholder="Aarav Mehta"
-                        required
-                        value={formData.name}
-                        onChange={updateField}
-                      />
-                    </div>
+                  <>
+                    {/* <div className="form-card-head">
+                      <div className="form-card-eyebrow">Join the waitlist</div>
+                      <h3 className="form-card-title">Get in before everyone else.</h3>
+                      <p className="form-card-sub">Beta Launch. Limited spots.</p>
+                    </div> */}
 
-                    <div className="field">
-                      <label htmlFor="email">Email</label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        inputMode="email"
-                        placeholder="aarav@domain.com"
-                        required
-                        value={formData.email}
-                        onChange={updateField}
-                      />
-                    </div>
-
-                    <div className="field">
-                      <label htmlFor="phone">WhatsApp number</label>
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        autoComplete="tel"
-                        inputMode="tel"
-                        placeholder="+91 98XXXXXX12"
-                        value={formData.phone}
-                        onChange={updateField}
-                      />
-                    </div>
-
-                    <div className="field">
-                      <label htmlFor="city">City</label>
-                      <input
-                        id="city"
-                        name="city"
-                        type="text"
-                        autoComplete="address-level2"
-                        placeholder="Mumbai"
-                        value={formData.city}
-                        onChange={updateField}
-                      />
-                    </div>
-
-                    <div className="field">
-                      <label htmlFor="pain">
-                        Biggest confusion when buying health products online
-                      </label>
-                      <textarea
-                        id="pain"
-                        name="pain"
-                        placeholder="What makes you pause before buying?"
-                        value={formData.pain}
-                        onChange={updateField}
-                      />
-                      <div className="field-note">
-                        Ingredients, protein quality, fake claims, pricing, delivery, or all of it.
+                    <form className="form-grid" onSubmit={handleSubmit} noValidate>
+                      <div className="field">
+                        <label htmlFor="name">Full name</label>
+                        <input
+                          id="name" name="name" type="text"
+                          autoComplete="name" placeholder="Aarav Mehta" required
+                          value={formData.name} onChange={updateField}
+                        />
                       </div>
-                    </div>
 
-                    <div className="honeypot" aria-hidden="true">
-                      <label htmlFor="company">Company</label>
-                      <input
-                        id="company"
-                        name="company"
-                        type="text"
-                        tabIndex="-1"
-                        autoComplete="off"
-                        value={formData.company}
-                        onChange={updateField}
-                      />
-                    </div>
-
-                    <div className="submit-row">
-                      <button className="submit-btn" type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Joining...' : 'Join the waitlist'}
-                      </button>
-                      <div className="form-status" data-state={status.state} role="status" aria-live="polite">
-                        {status.message}
+                      <div className="field">
+                        <label htmlFor="email">Email</label>
+                        <input
+                          id="email" name="email" type="email"
+                          autoComplete="email" inputMode="email"
+                          placeholder="aarav@domain.com" required
+                          value={formData.email} onChange={updateField}
+                        />
                       </div>
-                    </div>
-                  </form>
+
+                      <div className="field">
+                        <label htmlFor="phone">WhatsApp number</label>
+                        <input
+                          id="phone" name="phone" type="tel"
+                          autoComplete="tel" inputMode="tel"
+                          placeholder="+91 98XXXXXX12"
+                          value={formData.phone} onChange={updateField}
+                        />
+                      </div>
+
+                      <div className="field">
+                        <label htmlFor="city">City</label>
+                        <input
+                          id="city" name="city" type="text"
+                          autoComplete="address-level2" placeholder="Mumbai"
+                          value={formData.city} onChange={updateField}
+                        />
+                      </div>
+
+                      <div className="field">
+                        <label htmlFor="pain">Biggest confusion when buying health products online</label>
+                        <textarea
+                          id="pain" name="pain"
+                          placeholder="What makes you pause before buying?"
+                          value={formData.pain} onChange={updateField}
+                        />
+                        <span className="field-note">
+                          Ingredients, protein quality, fake claims, pricing, delivery, or all of it.
+                        </span>
+                      </div>
+
+                      <div className="honeypot" aria-hidden="true">
+                        <label htmlFor="company">Company</label>
+                        <input
+                          id="company" name="company" type="text"
+                          tabIndex="-1" autoComplete="off"
+                          value={formData.company} onChange={updateField}
+                        />
+                      </div>
+
+                      <div className="form-submit">
+                        <button className="submit-btn" type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Joining...' : 'Join the waitlist'}
+                        </button>
+                        <div className="form-status" data-state={status.state} role="status" aria-live="polite">
+                          {status.message}
+                        </div>
+                      </div>
+                    </form>
+                  </>
                 ) : (
-                  <div className="success-panel visible" aria-live="polite">
-                    <div>
-                      <div className="meta">You're in</div>
-                      <p className="card-subtitle">
-                        We’ll reach out when Harbour opens for your city. The quieter the launch,
-                        the better the experience.
-                      </p>
-                    </div>
+                  <div className="success-state">
+                    <div className="success-badge">✓ You're in</div>
+                    <p className="form-card-title">You're on the list.</p>
+                    <p className="success-msg">
+                      We'll reach out when Harbour opens for your city. The quieter the launch,
+                      the better the experience.
+                    </p>
                     <button
                       className="share-btn"
                       type="button"
@@ -417,79 +429,21 @@ export default function App() {
                     </div>
                   </div>
                 )}
-              </section>
-            </aside>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container">
-            <div className="section-head reveal">
-              <div>
-                <div className="eyebrow">Why Harbour exists</div>
-                <h2 className="section-title">
-                More brands. More noise. 
-                <em>More Doubt.</em>
-                </h2>
               </div>
-              <p className="section-copy">
-              Too many Products. Too many claims. Too much noise. Harbour helps people buy protein and health products with less bias, less friction, and more clarity.
-              </p>
-            </div>
 
-            <div className="reason-grid reveal" style={{ '--delay': '80ms' }}>
-              {whyHarbour.map((item) => (
-                <article className="reason-card" key={item.title}>
-                  <div className="meta">{item.label}</div>
-                  <div className="reason-number">{item.value}</div>
-                  <h3 className="reason-title">{item.title}</h3>
-                  <p>{item.copy}</p>
-                </article>
-              ))}
             </div>
           </div>
         </section>
 
-        <section className="section">
-          <div className="container">
-            <div className="section-head reveal">
-              <div>
-                <div className="eyebrow">How it works</div>
-                <h2 className="section-title">
-                  Simple input. <em>Sharper output.</em>
-                </h2>
-              </div>
-              <p className="section-copy">
-                Built for buying decisions, not pfaffing. Harbour understands
-                what you mean, checks what matters, and returns a tighter shortlist.
-              </p>
-            </div>
-
-            <div className="steps-grid reveal" style={{ '--delay': '80ms' }}>
-              {steps.map((step) => (
-                <article className="step-card" key={step.step}>
-                  <div className="step-kicker">{step.step}</div>
-                  <div>
-                    <h3 className="step-title">{step.title}</h3>
-                    <p>{step.copy}</p>
-                  </div>
-                  <div className="example-block">
-                    <div className="example-label meta">{step.label}</div>
-                    <div className="example-text">{step.example}</div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <footer className="container footer">
-          <div>
-            <strong>Harbour</strong> <span>Better discovery for everyone.</span>
-          </div>
-          <div className="microcopy">Beta Launch. Limited spots.</div>
-        </footer>
       </main>
-    </div>
+
+      {/* ── Footer ── */}
+      <footer className="footer">
+        <div className="wrap footer-inner">
+          <span className="footer-brand">Harbour</span>
+          <span className="footer-copy">Better discovery for everyone · Beta Launch · Limited spots</span>
+        </div>
+      </footer>
+    </>
   );
 }
