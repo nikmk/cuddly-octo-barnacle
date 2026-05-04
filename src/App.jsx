@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -98,6 +98,60 @@ async function shareLandingPage(setStatus) {
   } catch {
     setStatus({ message: 'Could not share right now.', state: 'error' });
   }
+}
+
+function MarqueeTrack({ brands }) {
+  const wrapRef = useRef(null);
+  const trackRef = useRef(null);
+  const drag = useRef({ active: false, startX: 0, scrollLeft: 0 });
+
+  function onStart(clientX) {
+    const wrap = wrapRef.current;
+    trackRef.current.style.animationPlayState = 'paused';
+    drag.current = { active: true, startX: clientX - wrap.offsetLeft, scrollLeft: wrap.scrollLeft };
+  }
+
+  function onMove(clientX) {
+    if (!drag.current.active) return;
+    const x = clientX - wrapRef.current.offsetLeft;
+    wrapRef.current.scrollLeft = drag.current.scrollLeft - (x - drag.current.startX);
+  }
+
+  function onEnd() {
+    drag.current.active = false;
+    trackRef.current.style.animationPlayState = 'running';
+  }
+
+  return (
+    <div
+      ref={wrapRef}
+      className="marquee-track-wrap"
+      style={{ overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab' }}
+      onMouseDown={e => onStart(e.clientX)}
+      onMouseMove={e => onMove(e.clientX)}
+      onMouseUp={onEnd}
+      onMouseLeave={onEnd}
+      onTouchStart={e => onStart(e.touches[0].clientX)}
+      onTouchMove={e => onMove(e.touches[0].clientX)}
+      onTouchEnd={onEnd}
+    >
+      <div ref={trackRef} className="marquee-track">
+        {[...brands, ...brands].map((b, i) => (
+          <div className="m-pill" key={i}>
+            <img
+              src={b.logo}
+              alt={b.name}
+              onError={e => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextSibling.style.display = 'block';
+              }}
+            />
+            <span className="m-pill-fallback">{b.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function App() {
@@ -221,23 +275,7 @@ export default function App() {
         {/* ── Marquee ── */}
         <div className="marquee-section reveal" style={{ '--d': '100ms' }}>
           <p className="marquee-label">Brands on Harbour</p>
-          <div className="marquee-track-wrap">
-            <div className="marquee-track">
-              {[...marqueebrands, ...marqueebrands].map((b, i) => (
-                <div className="m-pill" key={i}>
-                  <img
-                    src={b.logo}
-                    alt={b.name}
-                    onError={e => {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextSibling.style.display = 'block';
-                    }}
-                  />
-                  <span className="m-pill-fallback">{b.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <MarqueeTrack brands={marqueebrands} />
         </div>
 
         {/* ── Stats ── */}
