@@ -183,7 +183,7 @@ export default function App() {
         <div className="wrap nav-inner">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <a href="#top" className="nav-logo" aria-label="Harbour home">Harbour</a>
-            <span className="nav-tag">Better Discovery</span>
+            <span className="nav-tag">Better discovery for everyone </span>
           </div>
           <a className="nav-cta" href="#waitlist">Join waitlist</a>
         </div>
@@ -441,7 +441,7 @@ export default function App() {
       <footer className="footer">
         <div className="wrap footer-inner">
           <span className="footer-brand">Harbour</span>
-          <span className="footer-copy">Better discovery for everyone · Beta Launch · Limited spots</span>
+          <span className="footer-copy"> · Built by founders from IIT , XLRI and MICA · </span>
         </div>
       </footer>
     </>
