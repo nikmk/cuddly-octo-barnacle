@@ -251,19 +251,19 @@ export default function App() {
             <div className="hero-eyebrow reveal" style={{ '--d': '0ms' }}>
               Zero paid placements · 100+ brands
             </div>
-            <h1 className="hero-title reveal" style={{ '--d': '80ms' }}>
+            <h1 className="hero-title reveal" style={{ '--d': '0ms' }}>
               Something just searched <em>100 health brands</em> for you.
             </h1>
-            <p className="hero-sub reveal" style={{ '--d': '160ms' }}>
+            <p className="hero-sub reveal" style={{ '--d': '60ms' }}>
               Your AI finds the product. Their AI knows the brand. Harbour connects the two.
             </p>
-            <div className="hero-actions reveal" style={{ '--d': '220ms' }}>
+            <div className="hero-actions reveal" style={{ '--d': '80ms' }}>
               {/* <a className="btn-primary" href="#waitlist">Get early access</a> */}
               <span className="hero-note">Beta Launch · Limited spots</span>
             </div>
 
             {/* Diagram */}
-            <div className="diagram-wrap reveal" style={{ '--d': '300ms' }}>
+            <div className="diagram-wrap reveal" style={{ '--d': '0ms' }}>
               <img
                 src="/exchange-diagram.svg"
                 alt="Harbour Exchange Layer — your AI connects to 100+ health brands"
@@ -273,14 +273,14 @@ export default function App() {
         </section>
 
         {/* ── Marquee ── */}
-        <div className="marquee-section reveal" style={{ '--d': '100ms' }}>
+        <div className="marquee-section reveal" style={{ '--d': '0ms' }}>
           <p className="marquee-label">Brands on Harbour</p>
           <MarqueeTrack brands={marqueebrands} />
         </div>
 
         {/* ── Stats ── */}
         <div className="wrap">
-          <div className="stats-bar reveal" style={{ '--d': '80ms' }}>
+          <div className="stats-bar reveal" style={{ '--d': '0ms' }}>
             {trustStats.map(s => (
               <div className="stat" key={s.label}>
                 <div className="stat-label">{s.label}</div>
@@ -307,7 +307,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="cards-grid reveal" style={{ '--d': '80ms' }}>
+            <div className="cards-grid reveal" style={{ '--d': '0ms' }}>
               {whyHarbour.map(item => (
                 <article className="card" key={item.title}>
                   <div className="card-tag">{item.label}</div>
@@ -336,7 +336,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="steps-grid reveal" style={{ '--d': '80ms' }}>
+            <div className="steps-grid reveal" style={{ '--d': '0ms' }}>
               {steps.map(s => (
                 <article className="step" key={s.step}>
                   <div className="step-num">{s.step}</div>

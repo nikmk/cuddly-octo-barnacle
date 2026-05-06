@@ -1,28 +1,28 @@
 /* ─────────────────────────────────────
-   Tokens
+   Tokens — Google theme
 ───────────────────────────────────── */
 :root {
-  --cream:   #f5f0e8;
-  --white:   #fffcf7;
-  --text:    #16140f;
-  --muted:   #6b6258;
-  --border:  #d4c9bb;
-  --green:   #1e3d2c;
-  --green-m: #2a5540;
-  --green-l: #ddeadf;
-  --danger:  #7e342a;
-  --success: #1e3d2c;
+  --cream:   #ffffff;
+  --white:   #ffffff;
+  --text:    #202124;
+  --muted:   #5f6368;
+  --border:  #dadce0;
+  --green:   #1a73e8;
+  --green-m: #1557b0;
+  --green-l: #e8f0fe;
+  --danger:  #d93025;
+  --success: #1e8e3e;
 
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 24px;
-  --r-xl: 32px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
   --r-full: 999px;
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,.07), 0 12px 40px rgba(0,0,0,.05);
+  --shadow-sm: 0 1px 2px rgba(60,64,67,.1), 0 2px 6px rgba(60,64,67,.08);
+  --shadow-md: 0 1px 3px rgba(60,64,67,.12), 0 4px 16px rgba(60,64,67,.1);
 
-  --t: 220ms ease;
+  --t: 200ms ease;
   --nav: 64px;
   --wrap: 1120px;
   --gap: clamp(16px, 4vw, 32px);
@@ -34,9 +34,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
-  background: var(--cream);
+  background: #f8f9fa;
   color: var(--text);
-  font-family: "Manrope", system-ui, sans-serif;
+  font-family: "Google Sans", "Manrope", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -67,9 +67,9 @@ button { cursor: pointer; border: none; background: none; }
   height: var(--nav);
   display: flex;
   align-items: center;
-  background: rgba(245, 240, 232, 0.92);
-  backdrop-filter: blur(12px);
+  background: #fff;
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(60,64,67,.08);
 }
 
 .nav-inner {
@@ -119,6 +119,7 @@ button { cursor: pointer; border: none; background: none; }
 .hero {
   padding: clamp(48px, 8vw, 96px) 0 clamp(32px, 5vw, 64px);
   text-align: center;
+  background: #fff;
 }
 
 .hero-eyebrow {
@@ -221,7 +222,7 @@ button { cursor: pointer; border: none; background: none; }
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   margin-top: clamp(40px, 6vw, 72px);
-  background: var(--cream);
+  background: #f8f9fa;
   overflow: hidden;
 }
 
@@ -302,7 +303,7 @@ button { cursor: pointer; border: none; background: none; }
 
 .stat {
   padding: clamp(20px, 3vw, 32px) clamp(16px, 2.5vw, 28px);
-  background: var(--white);
+  background: #fff;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -390,7 +391,7 @@ button { cursor: pointer; border: none; background: none; }
 }
 
 .card {
-  background: var(--white);
+  background: #fff;
   padding: clamp(20px, 3vw, 32px);
   display: flex;
   flex-direction: column;
@@ -443,7 +444,7 @@ button { cursor: pointer; border: none; background: none; }
 }
 
 .step {
-  background: var(--white);
+  background: #fff;
   padding: clamp(20px, 3vw, 32px);
   display: grid;
   gap: 14px;
@@ -503,6 +504,7 @@ button { cursor: pointer; border: none; background: none; }
 .waitlist-section {
   padding: clamp(48px, 8vw, 96px) 0;
   background: var(--green);
+  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
 }
 
 .waitlist-inner {
@@ -622,7 +624,7 @@ button { cursor: pointer; border: none; background: none; }
   padding: 11px 14px;
   border: 1.5px solid var(--border);
   border-radius: var(--r-sm);
-  background: var(--cream);
+  background: #fff;
   color: var(--text);
   font-size: 0.92rem;
   transition: border-color var(--t), box-shadow var(--t), background var(--t);
@@ -726,7 +728,7 @@ button { cursor: pointer; border: none; background: none; }
    Footer
 ───────────────────────────────────── */
 .footer {
-  background: var(--green);
+  background: #202124;
   border-top: 1px solid rgba(255,255,255,0.08);
   padding: 28px 0;
 }
@@ -759,8 +761,8 @@ button { cursor: pointer; border: none; background: none; }
 ───────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
-  animation: rise 0.6s ease forwards;
+  transform: translateY(12px);
+  animation: rise 0.45s ease forwards;
   animation-delay: var(--d, 0ms);
 }
 
